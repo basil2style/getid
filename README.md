@@ -22,3 +22,6 @@ Permissions Used :
  READ_PHONE_STATE for Device ID,IMEI,IMSI
  ACCESS_WIFI_STATE for Wifi Mac Address
  READ_GSERVICES  for Google Service Framework Key
+
+Update:
+ ★ Added Export file feature
