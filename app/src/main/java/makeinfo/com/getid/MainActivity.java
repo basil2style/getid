@@ -9,10 +9,12 @@ import android.net.Uri;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Build;
+import android.os.Environment;
 import android.provider.Settings;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.telephony.TelephonyManager;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -21,6 +23,12 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+
 
 public class MainActivity extends ActionBarActivity {
 
@@ -28,6 +36,8 @@ public class MainActivity extends ActionBarActivity {
     boolean val =false;
     Button device_copy,sim_copy,wifi_copy,imei_copy,imsi_copy,gsf_copy;
     ImageView makeinfoapps;
+    String Body;
+    String getSimSerialNumber,imsi_t,imei_t,gsf_t,android_id,address;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -53,20 +63,20 @@ public class MainActivity extends ActionBarActivity {
         final int sdk = android.os.Build.VERSION.SDK_INT;
 
         TelephonyManager telemamanger = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-        final String getSimSerialNumber = telemamanger.getSimSerialNumber();
+        getSimSerialNumber = telemamanger.getSimSerialNumber();
      //   final String getSimNumber = telemamanger.getLine1Number();
-        final String imsi_t = telemamanger.getSubscriberId();
-        final String imei_t = telemamanger.getDeviceId();
-        final String gsf_t = getGsfAndroidId(getApplicationContext());
+         imsi_t = telemamanger.getSubscriberId();
+         imei_t = telemamanger.getDeviceId();
+         gsf_t = getGsfAndroidId(getApplicationContext());
         //final String gsf_t = " ";
 
 
-         final String android_id = Settings.Secure.getString(getContentResolver(),
+        android_id = Settings.Secure.getString(getContentResolver(),
                 Settings.Secure.ANDROID_ID);
 
         WifiManager manager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
         WifiInfo info = manager.getConnectionInfo();
-        final String address = info.getMacAddress();
+        address = info.getMacAddress();
 
 
 
@@ -274,8 +284,36 @@ public class MainActivity extends ActionBarActivity {
             startActivity(browserIntent);
             return true;
         }
+        if (id == R.id.export) {
+            Body = "Sim Serial Number :"+getSimSerialNumber+"\n"+"Device Id : "+android_id+"\n"+"Wifi Address :"+address+"\n"
+                    +"IMEI : "+imei_t+"\n"+"IMSI :"+imsi_t+"GSF Key :"+gsf_t;
+           // String fileName = "GetID";
+            //generateNoteonSD(fileName,Body);
+            writeToFile(Body);
+            return true;
+        }
 
         return super.onOptionsItemSelected(item);
+    }
+
+
+    public void writeToFile(String data) {
+        try {
+            File myFile = new File("/sdcard/GetID.txt");
+            myFile.createNewFile();
+            FileOutputStream fOut = new FileOutputStream(myFile);
+            OutputStreamWriter myOutWriter =
+                    new OutputStreamWriter(fOut);
+            myOutWriter.append(data);
+            myOutWriter.close();
+            fOut.close();
+            Toast.makeText(getBaseContext(),
+                    "Done writing SD 'GetID.txt'",
+                    Toast.LENGTH_SHORT).show();
+        } catch (Exception e) {
+            Toast.makeText(getBaseContext(), e.getMessage(),
+                    Toast.LENGTH_SHORT).show();
+        }
     }
 
 
